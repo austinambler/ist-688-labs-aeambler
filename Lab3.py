@@ -19,14 +19,17 @@ for msg in st.session_state.messages:
 # set buffer limit
 max_messages = 2
 
+# define function to get buffered messages
 def get_buffered_messages(messages, max_messages = max_messages):
+
+    system_msgs = [m for m in messages if m["role"] == "system"]
     user_idxs = [i for i, m in enumerate(messages) if m["role"] == "user"][-max_messages:]
     assistant_idxs = [i for i, m in enumerate(messages) if m["role"] == "assistant"][-max_messages:]
 
     keep_idxs = sorted(set(user_idxs + assistant_idxs))
     trimmed = [messages[i] for i in keep_idxs]
 
-    return trimmed
+    return system_msgs + trimmed
 
 
 if prompt := st.chat_input("What is up?"):
