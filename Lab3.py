@@ -11,7 +11,6 @@ if 'client' not in st.session_state:
 
 SYSTEM_PROMPT = """You are a helpful assistant. Follow this conversation pattern strictly:
 
-# This is for the 10-year old part
 - Use simple, everyday words and short sentences.
 - Avoid jargon and technical terms; if you must use one, explain it simply right after.
 - Use relatable examples or comparisons (like toys, games, animals, or everyday situations) to make ideas easier to picture.
