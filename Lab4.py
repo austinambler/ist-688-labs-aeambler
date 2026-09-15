@@ -78,35 +78,35 @@ st.title("My Lab4 Chatbot Using RAG")
 
 
 
-topic = st.sidebar.text_input("Topic", placeholder = "Type your topic")
+#topic = st.sidebar.text_input("Topic", placeholder = "Type your topic")
 
-if topic:
-    client = st.session_state.openai_client
-    response = client.embeddings.create(
-        input = topic,
-        model = 'text-embedding-3-small'
-    )
+#if topic:
+#    client = st.session_state.openai_client
+#    response = client.embeddings.create(
+#        input = topic,
+#        model = 'text-embedding-3-small'
+#    )
 
     # Get the embedding
-    query_embedding = response.data[0].embedding
+#    query_embedding = response.data[0].embedding
 
     # Get text related to the question
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results = 3
-    )
+#    results = collection.query(
+#        query_embeddings=[query_embedding],
+#        n_results = 3
+#    )
 
     # Display the results
-    st.subheader(f'Results for: {topic}')
+#    st.subheader(f'Results for: {topic}')
 
-    for i in range(len(results['documents'][0])):
-        doc = results['documents'][0][i]
-        doc_id = results['ids'][0][i]
+#    for i in range(len(results['documents'][0])):
+#        doc = results['documents'][0][i]
+#        doc_id = results['ids'][0][i]
 
-        st.write(f'**{i + 1}. {doc_id}**')
+#        st.write(f'**{i + 1}. {doc_id}**')
 
-else:
-    st.info('Enter a topic in the sidebar to search the collection')
+#else:
+#    st.info('Enter a topic in the sidebar to search the collection')
 
 
 
@@ -119,6 +119,11 @@ SYSTEM_PROMPT = """You are a helpful assistant. Follow this conversation pattern
 - Avoid jargon and technical terms; if you must use one, explain it simply right after.
 - Use relatable examples or comparisons (like toys, games, animals, or everyday situations) to make ideas easier to picture.
 - Keep a friendly, encouraging tone.
+
+You will sometimes be given "Reference material" pulled from course PDFs, along with the user's question.
+- If reference material is provided and it's relevant, base your answer on it, and briefly mention that you're drawing from the course documents (e.g., "Based on the course materials...").
+- If the reference material doesn't actually help answer the question, rely on your own knowledge instead and don't force a connection.
+- Never pretend information came from the documents if it didn't.
 
 1. Wait for the user to ask a question.
 2. Answer the question clearly and concisely.
@@ -161,19 +166,55 @@ def get_buffered_messages(messages, max_messages = max_messages):
 
     return system_msgs + trimmed
 
+# define function to retrieve relevant PDF context from ChromaDB
+def get_relevant_context(query, collection, client, n_results=3):
+    response = client.embeddings.create(
+        input=query,
+        model='text-embedding-3-small'
+    )
+    query_embedding = response.data[0].embedding
+
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=n_results
+    )
+
+    docs = results['documents'][0]
+    ids = results['ids'][0]
+
+    return docs, ids
+
 if prompt := st.chat_input("What is up?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    client = st.session_state.client
+    client = st.session_state.openai_client
+
+    # --- RAG: retrieve relevant PDF context ---
+    docs, ids = get_relevant_context(prompt, collection, client, n_results=3)
+
+    context_text = "\n\n---\n\n".join(
+        f"[Source: {doc_id}]\n{doc_text}"
+        for doc_id, doc_text in zip(ids, docs)
+    )
+
+    augmented_prompt = f"""Reference material from course PDFs:
+
+{context_text}
+
+User's question: {prompt}"""
 
     buffered_messages = get_buffered_messages(st.session_state.messages)
 
+    # swap in the augmented prompt for the API call only;
+    # session_state keeps the clean, original prompt for display
+    api_messages = buffered_messages[:-1] + [{"role": "user", "content": augmented_prompt}]
+
     stream = client.chat.completions.create(
         model = openAI_model,
-        messages = buffered_messages,
+        messages = api_messages,
         stream = True
     )
 
@@ -181,4 +222,3 @@ if prompt := st.chat_input("What is up?"):
         response = st.write_stream(stream)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
-
