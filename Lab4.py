@@ -120,9 +120,9 @@ SYSTEM_PROMPT = """You are a helpful assistant. Follow this conversation pattern
 - Use relatable examples or comparisons (like toys, games, animals, or everyday situations) to make ideas easier to picture.
 - Keep a friendly, encouraging tone.
 
-You will sometimes be given "Reference material" pulled from course PDFs, along with the user's question.
-- If reference material is provided and it's relevant, base your answer on it, and briefly mention that you're drawing from the course documents (e.g., "Based on the course materials...").
-- If the reference material doesn't actually help answer the question, rely on your own knowledge instead and don't force a connection.
+You will be given "Reference material" pulled from course PDFs, along with the user's question.
+- If the reference material is relevant, base your answer on it, and briefly mention that you're drawing from the course documents (e.g., "Based on the course materials...").
+- If the reference material doesn't help answer the question, rely on your own knowledge instead and don't force a connection.
 - Never pretend information came from the documents if it didn't.
 
 1. Wait for the user to ask a question.
@@ -166,23 +166,17 @@ def get_buffered_messages(messages, max_messages = max_messages):
 
     return system_msgs + trimmed
 
-# define function to retrieve relevant PDF context from ChromaDB
-def get_relevant_context(query, collection, client, n_results=3):
-    response = client.embeddings.create(
-        input=query,
-        model='text-embedding-3-small'
+# load ALL documents from the collection once and cache them for the session
+@st.cache_data
+def get_all_pdf_context(_collection):
+    all_docs = _collection.get()
+    context_text = "\n\n---\n\n".join(
+        f"[Source: {doc_id}]\n{doc_text}"
+        for doc_id, doc_text in zip(all_docs['ids'], all_docs['documents'])
     )
-    query_embedding = response.data[0].embedding
+    return context_text
 
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=n_results
-    )
-
-    docs = results['documents'][0]
-    ids = results['ids'][0]
-
-    return docs, ids
+ALL_PDF_CONTEXT = get_all_pdf_context(collection)
 
 if prompt := st.chat_input("What is up?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -192,17 +186,9 @@ if prompt := st.chat_input("What is up?"):
 
     client = st.session_state.openai_client
 
-    # --- RAG: retrieve relevant PDF context ---
-    docs, ids = get_relevant_context(prompt, collection, client, n_results=3)
-
-    context_text = "\n\n---\n\n".join(
-        f"[Source: {doc_id}]\n{doc_text}"
-        for doc_id, doc_text in zip(ids, docs)
-    )
-
     augmented_prompt = f"""Reference material from course PDFs:
 
-{context_text}
+{ALL_PDF_CONTEXT}
 
 User's question: {prompt}"""
 
