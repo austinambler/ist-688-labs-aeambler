@@ -93,7 +93,7 @@ if topic:
     # Get text related to the question
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_result = 3
+        n_results = 3
     )
 
     # Display the results
