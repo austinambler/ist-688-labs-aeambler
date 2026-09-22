@@ -12,15 +12,26 @@ def get_current_weather(location):
     try:
         data = response.json()
     except ValueError:
-        # unknown locations come back as plain text, not JSON
         raise Exception(f'Could not find a location named {location}')
 
     current = data['current_condition'][0]
+    today = data['weather'][0]
+
+    # max chance of rain across today's hourly forecast
+    max_rain_chance = max(int(hour['chanceofrain']) for hour in today['hourly'])
 
     return {
         'location': location,
         'temperature': float(current['temp_F']),
-        'description': current['weatherDesc'][0]['value']
+        'feels_like': float(current['FeelsLikeF']),
+        'description': current['weatherDesc'][0]['value'].strip(),
+        'humidity': int(current['humidity']),
+        'wind_mph': float(current['windspeedMiles']),
+        'uv_index': int(current['uvIndex']),
+        'high_today_f': float(today['maxtempF']),
+        'low_today_f': float(today['mintempF']),
+        'chance_of_rain_pct': max_rain_chance,
+        'chance_of_snow_pct': max(int(h['chanceofsnow']) for h in today['hourly']),
     }
 
 
