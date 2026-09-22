@@ -68,7 +68,7 @@ tools = [
 
 if st.sidebar.button("Get Advice"):
     if not city:
-        st.warning("Please enter a city.")
+        city = "Syracuse"
     else:
         messages = [
         {
