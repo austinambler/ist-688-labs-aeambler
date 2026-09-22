@@ -27,7 +27,6 @@ def get_current_weather(location):
         'description': current['weatherDesc'][0]['value'].strip(),
         'humidity': int(current['humidity']),
         'wind_mph': float(current['windspeedMiles']),
-        'uv_index': int(current['uvIndex']),
         'high_today_f': float(today['maxtempF']),
         'low_today_f': float(today['mintempF']),
         'chance_of_rain_pct': max_rain_chance,
