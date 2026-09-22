@@ -4,7 +4,11 @@ import streamlit as st
 from openai import OpenAI
 
 
-def get_current_weather(location):
+def get_current_weather(location = None):
+
+    if not location:
+        location = "Syracuse"
+
     url = f'https://wttr.in/{location}?format=j1'
     response = requests.get(url, timeout=10)
     if response.status_code != 200:
@@ -66,10 +70,24 @@ if st.sidebar.button("Get Advice"):
     if not city:
         st.warning("Please enter a city.")
     else:
-        messages = [{
+        messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a helpful assistant that gives clothing and outdoor "
+                "activity recommendations based on current weather conditions. "
+                "Consider temperature, feels-like temperature, wind, humidity, "
+                "UV index, and chance of rain/snow when making suggestions."
+            )
+        },
+        {
             "role": "user",
-            "content": f"What's the weather like in {city} today, and what should I wear?"
-        }]
+            "content": (
+                f"What should I wear in {city if city else 'Syracuse'} today, "
+                "and what are some good outdoor activities for this weather?"
+            )
+        }
+    ]
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
