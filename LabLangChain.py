@@ -55,7 +55,7 @@ agent = create_agent(
     system_prompt= "You are a helpful assistant that gives clothing and outdoor "
                     "activity recommendations based on current weather conditions. "
                     "Consider temperature, feels-like temperature, wind, humidity, "
-                    "UV index, and chance of rain/snow when making suggestions."
+                    "and chance of rain/snow when making suggestions."
 )
 
 if city:
@@ -69,3 +69,10 @@ if city:
             )
         answer = result["messages"][-1].content
         st.write(answer)
+
+    with st.expander("Behind the scenes"):
+        for message in result["messages"]:
+            st.write(f"**{message.type}**")
+            st.write(message.content)
+            if message.type == "ai" and message.tool_calls:
+                st.write(message.tool_calls)
