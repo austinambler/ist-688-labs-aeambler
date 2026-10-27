@@ -44,7 +44,7 @@ st.title("Lab 6 What to Wear Bot With LangChain")
 st.write("Input a city and the bot will tell you what to wear today")
 
 #openai_api_key = st.secrets["OPEN_AI_KEY"]
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
 #client = OpenAI(api_key=openai_api_key)
 
 city = st.sidebar.text_input("Enter city")
