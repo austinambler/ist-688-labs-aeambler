@@ -43,9 +43,7 @@ def get_weather_data(location: str = "Syracuse, NY") -> dict:
 st.title("Lab 6 What to Wear Bot With LangChain")
 st.write("Input a city and the bot will tell you what to wear today")
 
-#openai_api_key = st.secrets["OPEN_AI_KEY"]
 os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
-#client = OpenAI(api_key=openai_api_key)
 
 city = st.sidebar.text_input("Enter city")
 
@@ -76,3 +74,7 @@ if city:
             st.write(message.content)
             if message.type == "ai" and message.tool_calls:
                 st.write(message.tool_calls)
+
+# There are 4 messages: human, ai, tool, ai
+# The second message, the first one from the ai is the model asking for the tool call
+# In Lab5, all the tool_call lines generated those messages
