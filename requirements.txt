@@ -4,3 +4,5 @@ chromadb
 pysqlite3-binary
 pypdf
 requests
+langchain
+langchain-openai
