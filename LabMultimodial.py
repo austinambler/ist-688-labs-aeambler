@@ -79,7 +79,8 @@ input_type = st.radio(
 if input_type == "Image":
     upload = st.file_uploader(
         "Upload an Image",
-        type=["png", "jpg", "jpeg"]
+        type=["png", "jpg", "jpeg"],
+        max_upload_size= 5
     )
 
 else:
