@@ -15,6 +15,11 @@ def prepare_image(upload):
     mime = formats[Path(upload.name).suffix.lower()]
     encoded = base64.b64encode(upload.getvalue()).decode("utf-8")
 
+    return {
+        "type": "input_image",
+        "image_url": f"data:{mime};base64,{encoded}"
+    }
+
 def transcribe_audio(upload):
     transcript = client.audio.transcriptions.create(
         model = "gpt-transcribe",
