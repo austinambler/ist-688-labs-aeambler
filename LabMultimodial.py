@@ -64,19 +64,15 @@ def get_audio_duration(upload):
 
     return audio.info.length
 
-
-# -----------------------------
-# STREAMLIT INTERFACE
-# -----------------------------
-
 st.title("Multimodal Content Analyzer")
 
 st.write("Upload an image or audio file for AI-powered analysis.")
 
 # Select input type
-input_type = st.selectbox(
+input_type = st.radio(
     "Select Input Type",
-    ["Image", "Audio"]
+    ["Image", "Audio"],
+    horizontal=True
 )
 
 # File uploader
