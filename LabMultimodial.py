@@ -128,10 +128,6 @@ if st.button("Analyze"):
     if upload is None:
         st.warning("Please upload a file before analyzing.")
 
-    # Check file size (5 MB maximum)
-    elif upload.size > 5 * 1024 * 1024:
-        st.error("File exceeds the 5 MB size limit.")
-
     else:
 
         # Use question if provided, otherwise request a summary
