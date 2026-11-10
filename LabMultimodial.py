@@ -2,6 +2,8 @@ import base64
 from pathlib import Path
 from openai import OpenAI
 import streamlit as st
+from mutagen import File as MutagenFile
+from io import BytesIO
 
 client = OpenAI(api_key = st.secrets["OPEN_AI_KEY"])
 
