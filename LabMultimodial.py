@@ -86,7 +86,8 @@ if input_type == "Image":
 else:
     upload = st.file_uploader(
         "Upload an Audio File",
-        type=["mp3", "wav", "m4a"]
+        type=["mp3", "wav", "m4a"],
+        max_upload_size= 5
     )
 
 # Preview uploaded file
