@@ -43,7 +43,7 @@ def get_weather(location: str = "Syracuse, NY") -> dict:
     return get_current_weather(location) 
 
 
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
 MODEL = "gpt-5-mini"
 
 weather_agent = Agent(
