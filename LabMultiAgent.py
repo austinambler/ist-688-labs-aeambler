@@ -139,8 +139,14 @@ def run(agent, prompt):
 
 city = st.sidebar.text_input("Enter city")
 
+mode = st.sidebar.radio(
+    "Mode",
+    ["Team of agents", "Single agent"],
+)
+
 if st.sidebar.button("Get Advice"):
     location = city.strip() if city else "Syracuse, NY"
+    active_agent = manager_agent if mode == "Team of agents" else single_agent
 
     with st.chat_message("assistant"):
         with st.spinner("Checking the weather and thinking..."):
@@ -148,7 +154,7 @@ if st.sidebar.button("Get Advice"):
                 start = time.time()
                 result = asyncio.run(
                     Runner.run(
-                        manager_agent,
+                        active_agent,
                         f"What should I wear and do today in {location}?",
                     )
                 )
@@ -162,8 +168,9 @@ if st.sidebar.button("Get Advice"):
         usage = result.context_wrapper.usage
         with st.expander("Behind the scenes"):
             st.write(
-                f"Model requests: {usage.requests} · Tokens: {usage.total_tokens:,} · "
-                f"Time: {seconds:.1f}s · Answered by: {result.last_agent.name}"
+                f"Mode: {mode} · Model requests: {usage.requests} · "
+                f"Tokens: {usage.total_tokens:,} · Time: {seconds:.1f}s · "
+                f"Answered by: {result.last_agent.name}"
             )
             for item in result.new_items:
                 if item.type == "tool_call_item":
@@ -177,3 +184,32 @@ if st.sidebar.button("Get Advice"):
                     st.write(
                         f"handoff: {item.source_agent.name} -> {item.target_agent.name}"
                     )
+
+single_agent = Agent(
+    name="Single agent",
+    instructions=(
+        "You help people decide what to wear and what to do today based on the weather. "
+        "Always call the get_weather tool first for the location the user asks about "
+        "(default to Syracuse, NY if none is given). Then write one friendly answer with "
+        "three short sections:\n"
+        "1. Weather: the key facts (temperature, feels-like, conditions, humidity, wind, "
+        "high/low, chance of rain and snow).\n"
+        "2. What to wear: layers, outerwear, footwear, and accessories, with a one-line "
+        "reason for each, based on the feels-like temperature, wind, and precipitation.\n"
+        "3. What to do: 3-5 activities that suit the conditions, mixing indoor and outdoor "
+        "where it makes sense, with a best time of day if the data supports it.\n"
+        "Only use facts returned by the tool. If the tool fails, say the weather could not "
+        "be retrieved and stop."
+    ),
+    tools=[get_weather],
+    model=MODEL,
+)
+
+# Tool calls weather_report, outfit_recommendation, 
+#  and activity_recommendation in that order
+
+# The manager sent the weather information from the
+#  result of the weather_report to the stylist bot.
+
+# The other model calls are the manager deciding to call the tools
+
