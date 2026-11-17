@@ -127,6 +127,26 @@ manager_agent = Agent(
     model=MODEL,
 )
 
+single_agent = Agent(
+    name="Single agent",
+    instructions=(
+        "You help people decide what to wear and what to do today based on the weather. "
+        "Always call the get_weather tool first for the location the user asks about "
+        "(default to Syracuse, NY if none is given). Then write one friendly answer with "
+        "three short sections:\n"
+        "1. Weather: the key facts (temperature, feels-like, conditions, humidity, wind, "
+        "high/low, chance of rain and snow).\n"
+        "2. What to wear: layers, outerwear, footwear, and accessories, with a one-line "
+        "reason for each, based on the feels-like temperature, wind, and precipitation.\n"
+        "3. What to do: 3-5 activities that suit the conditions, mixing indoor and outdoor "
+        "where it makes sense, with a best time of day if the data supports it.\n"
+        "Only use facts returned by the tool. If the tool fails, say the weather could not "
+        "be retrieved and stop."
+    ),
+    tools=[get_weather],
+    model=MODEL,
+)
+
 
 @st.cache_resource
 def get_event_loop():
@@ -185,25 +205,7 @@ if st.sidebar.button("Get Advice"):
                         f"handoff: {item.source_agent.name} -> {item.target_agent.name}"
                     )
 
-single_agent = Agent(
-    name="Single agent",
-    instructions=(
-        "You help people decide what to wear and what to do today based on the weather. "
-        "Always call the get_weather tool first for the location the user asks about "
-        "(default to Syracuse, NY if none is given). Then write one friendly answer with "
-        "three short sections:\n"
-        "1. Weather: the key facts (temperature, feels-like, conditions, humidity, wind, "
-        "high/low, chance of rain and snow).\n"
-        "2. What to wear: layers, outerwear, footwear, and accessories, with a one-line "
-        "reason for each, based on the feels-like temperature, wind, and precipitation.\n"
-        "3. What to do: 3-5 activities that suit the conditions, mixing indoor and outdoor "
-        "where it makes sense, with a best time of day if the data supports it.\n"
-        "Only use facts returned by the tool. If the tool fails, say the weather could not "
-        "be retrieved and stop."
-    ),
-    tools=[get_weather],
-    model=MODEL,
-)
+
 
 # Tool calls weather_report, outfit_recommendation, 
 #  and activity_recommendation in that order
