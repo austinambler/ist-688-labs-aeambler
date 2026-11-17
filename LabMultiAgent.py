@@ -145,12 +145,35 @@ if st.sidebar.button("Get Advice"):
     with st.chat_message("assistant"):
         with st.spinner("Checking the weather and thinking..."):
             try:
+                start = time.time()
                 result = asyncio.run(
                     Runner.run(
                         manager_agent,
                         f"What should I wear and do today in {location}?",
                     )
                 )
-                st.write(result.final_output)
+                seconds = time.time() - start
             except Exception as e:
                 st.error(str(e))
+                st.stop()
+
+        st.write(result.final_output)
+
+        usage = result.context_wrapper.usage
+        with st.expander("Behind the scenes"):
+            st.write(
+                f"Model requests: {usage.requests} · Tokens: {usage.total_tokens:,} · "
+                f"Time: {seconds:.1f}s · Answered by: {result.last_agent.name}"
+            )
+            for item in result.new_items:
+                if item.type == "tool_call_item":
+                    st.write(
+                        f"{item.agent.name} called {item.raw_item.name}: "
+                        f"{item.raw_item.arguments}"
+                    )
+                elif item.type == "tool_call_output_item":
+                    st.write(f"result: {str(item.output)[:300]}")
+                elif item.type == "handoff_output_item":
+                    st.write(
+                        f"handoff: {item.source_agent.name} -> {item.target_agent.name}"
+                    )
